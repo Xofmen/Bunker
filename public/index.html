@@ -1,0 +1,72 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b09"><title>БУНКЕР</title>
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Oswald:wght@400;600&display=swap&subset=cyrillic" rel="stylesheet">
+<style>
+:root{--y:#f5c400;--bg:#0b0b09;--p:#171612;--t:#e8e4d0;--g:#7ec850;--r:#e0412f;color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:17px Oswald,'Arial Narrow',sans-serif;min-height:100vh}
+h1,h2,.b,.btn,.big{font-family:'Russo One',Impact,sans-serif;text-transform:uppercase;letter-spacing:1px}
+.hz{height:12px;background:repeating-linear-gradient(-45deg,var(--y) 0 14px,#111 14px 28px)}
+.wrap{max-width:520px;margin:0 auto;padding:16px}h1{font-size:46px;margin:6px 0;color:var(--y);text-align:center}
+h2{font-size:20px;margin:0 0 10px;color:var(--y)}.rad{font-size:64px;text-align:center;color:var(--y)}.sub{opacity:.7;margin:0 0 14px;text-align:center}
+.card{background:var(--p);border:1px solid #333;border-left:5px solid var(--y);border-radius:6px;padding:14px;margin-bottom:14px}
+label{display:block;margin:10px 0 6px;opacity:.7;text-transform:uppercase;font-size:13px;letter-spacing:1px}
+.seg{display:flex;gap:6px}.seg button{flex:1;padding:10px 4px;background:#222;color:var(--t);border:1px solid #444;border-radius:4px;font:inherit}
+.seg .on{background:var(--y);color:#000;border-color:var(--y)}
+.btn{display:block;width:100%;margin-top:14px;padding:14px;background:var(--y);color:#000;border:0;border-radius:4px;font-size:16px}
+.btn:disabled{opacity:.35}.btn.o{background:none;color:var(--y);border:2px solid var(--y)}
+input{width:100%;padding:12px;background:var(--bg);color:var(--y);border:2px solid #444;border-radius:4px;font:inherit;font-size:20px;text-align:center}
+.top{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#000;border-bottom:1px solid #333}
+.x{background:none;border:1px solid #555;color:#aaa;padding:4px 10px;border-radius:4px;font:inherit}
+.tabs{display:flex;position:sticky;top:0;background:#000;z-index:5}.tabs button{flex:1;padding:12px 4px;background:#000;color:#999;border:0;border-bottom:3px solid #333;font:inherit;text-transform:uppercase}
+.tabs .on{color:var(--y);border-color:var(--y)}.lb{color:var(--y);font-size:13px;letter-spacing:1px;text-transform:uppercase}
+.tx{font-size:23px;margin:4px 0 10px}.bl{filter:blur(9px);user-select:none}.op{border-left-color:var(--g)}.op .lb{color:var(--g)}
+.bt{display:flex;gap:8px}.bt button{flex:1;padding:9px;background:#222;color:var(--t);border:1px solid #444;border-radius:4px;font:inherit}
+.big{font-size:54px;text-align:center;color:var(--y);margin:6px 0}.st{display:flex;gap:10px}.st .card{flex:1;text-align:center;margin:0 0 14px}.st b{display:block;font-size:30px;color:var(--y)}
+.bar{background:var(--y);color:#000;padding:8px 14px;text-align:center;font-weight:600}.dead{border-left-color:var(--r);opacity:.6}.dead .nm{text-decoration:line-through}
+.nm{font-size:20px;font-weight:600}.chip{display:inline-block;background:#222;border:1px solid #444;border-radius:4px;padding:3px 8px;margin:4px 4px 0 0;font-size:15px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#555;margin-right:6px}.dot.on{background:var(--g)}.err{color:var(--r);text-align:center;margin-top:10px}
+</style></head><body><div id="app"></div><script>
+const $=s=>document.querySelector(s),T={S:'Серьёзный',X:'Микс',F:'Чёрный юмор'};
+const K=['Профессия','Пол и возраст','Здоровье','Хобби','Багаж','Факт','Черта','Фобия','Спецкарта'];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let S=null,ws,L={name:'',room:'',token:'',tone:'X'},tab=0,peek={},tl=60,tp=60,iv=0,err='',lastPh='';
+try{Object.assign(L,JSON.parse(localStorage.getItem('bk2')))}catch(e){}
+if(!L.token)L.token=Math.random().toString(36).slice(2)+Date.now().toString(36);
+const sv=()=>{try{localStorage.setItem('bk2',JSON.stringify(L))}catch(e){}};
+const send=o=>{if(ws&&ws.readyState==1)ws.send(JSON.stringify(o));else{err='Нет связи с сервером, подожди секунду';render()}};
+function conn(){ws=new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host);
+ws.onopen=()=>{err='';if(L.room)ws.send(JSON.stringify({t:'join',room:L.room,name:L.name,token:L.token}));else render()};
+ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.t=='err'){err=m.msg;if(!S){L.room='';sv()}}else{S=m;L.room=m.room;sv();err='';
+if(m.phase!=lastPh){lastPh=m.phase;if(m.phase=='vote'||m.phase=='end'){tab=1;try{navigator.vibrate(200)}catch(e){}}}}render()};
+ws.onclose=()=>setTimeout(conn,1500)}
+function nm(){L.name=($('#nm').value||'').trim();if(!L.name){err='Введи имя';render();return false}sv();return true}
+function create(){if(nm())send({t:'create',tone:L.tone,name:L.name,token:L.token})}
+function join(){if(!nm())return;const r=$('#rm').value.trim();if(!/^\d{4}$/.test(r)){err='Код — 4 цифры';render();return}L.room=r;send({t:'join',room:r,name:L.name,token:L.token})}
+function leave(){if(confirm('Выйти из игры?')){send({t:'leave'});S=null;L.room='';sv();lastPh='';ws.close()}}
+function tms(){const e=$('#tm');if(e)e.textContent=Math.floor(tl/60)+':'+String(tl%60).padStart(2,'0')}
+function ts(){if(iv){clearInterval(iv);iv=0;return render()}if(tl<=0)tl=tp;iv=setInterval(()=>{tl--;tms();if(tl<=0){clearInterval(iv);iv=0;try{navigator.vibrate([400,200,400])}catch(e){}render()}},1000);render()}
+function tr(s){clearInterval(iv);iv=0;tp=tl=s;render()}
+const hd=()=>`<div class="hz"></div><div class="top"><span class="b">☢ Бункер</span><span>Комната <b>${S.room}</b></span><button class="x" onclick="leave()">Выйти</button></div>`;
+const plist=()=>S.pl.map(p=>`<div class="card" style="padding:10px"><span class="dot ${p.on?'on':''}"></span>${esc(p.name)}${p.id==S.me.id?' (ты)':''}</div>`).join('');
+function render(){const A=$('#app');let h;
+if(!S)h=`<div class="hz"></div><div class="wrap"><div class="rad">☢</div><h1>Бункер</h1><p class="sub">Выживут не все. Каждый играет со своего телефона.</p>
+<div class="card"><label>Твоё имя</label><input id="nm" maxlength="14" value="${esc(L.name)}" placeholder="Имя"></div>
+<div class="card"><h2>Новая игра</h2><label>Тон игры</label><div class="seg">${Object.entries(T).map(([k,v])=>`<button class="${L.tone==k?'on':''}" onclick="L.name=$('#nm').value;L.tone='${k}';sv();render()">${v}</button>`).join('')}</div><button class="btn" onclick="create()">Создать комнату</button></div>
+<div class="card"><h2>Войти в комнату</h2><input id="rm" inputmode="numeric" maxlength="4" placeholder="Код из 4 цифр"><button class="btn o" onclick="join()">Войти</button></div><div class="err">${esc(err)}</div></div>`;
+else if(S.phase=='lobby')h=`${hd()}<div class="wrap"><div class="card"><div class="lb">Код комнаты · тон: ${T[S.tone]}</div><div class="big">${S.room}</div><p class="sub" style="margin:0">Друзья вводят этот код при входе</p></div><h2>Игроки (${S.pl.length}/10)</h2>${plist()}
+<button class="btn" ${S.pl.length<4?'disabled':''} onclick="send({t:'start'})">Начать игру</button><p class="sub" style="margin-top:8px">Нужно минимум 4 игрока. Начать может любой.</p></div>`;
+else{const g=S.g,me=S.me,end=S.phase=='end',ph=end?'финал':S.phase=='vote'?'идёт голосование':'открываем карты';
+h=hd()+`<div class="tabs">${['Карточка','Стол','Бункер'].map((n,i)=>`<button class="${tab==i?'on':''}" onclick="tab=${i};render()">${n}</button>`).join('')}</div><div class="bar">${end?'Финал':'Раунд '+S.round+' из '+g.E} · ${ph}${me.out?' · ты вылетел ☠':''}</div><div class="wrap">`;
+if(tab==0)h+=me.out?`<div class="card dead"><h2>Ты исключён</h2><p>Бункер закрыт для тебя. Можно остаться и наблюдать за столом.</p></div>`:'' ,
+h+=tab==0?K.map((k,i)=>{const o=me.open[i],p=peek[i];return`<div class="card ${o?'op':''}"><div class="lb">${k}${o?' · открыто всем':''}</div><div class="tx ${o||p?'':'bl'}">${esc(me.card[k])}</div><div class="bt"><button onclick="peek[${i}]=!peek[${i}];render()">${p?'Скрыть':'Глянуть'}</button>${o?'':`<button onclick="send({t:'open',i:${i}})">Открыть всем</button>`}</div></div>`}).join(''):'';
+if(tab==1){const al=S.pl.filter(p=>!p.out);
+if(S.last)h+=`<div class="card" style="border-left-color:var(--r)"><div class="lb">Итог голосования</div><div class="tx">${S.last.tie?'Ничья: '+S.last.tie.map(esc).join(', ')+'. Переголосуем.':'Исключён: '+esc(S.last.out)}</div><div>${S.last.tally.map(([n,c])=>esc(n)+' — '+c).join(' · ')}</div></div>`;
+if(end)h+=`<div class="card"><h2>Бункер закрыт</h2><p>Выжили: <b>${al.map(p=>esc(p.name)).join(', ')}</b></p><button class="btn" onclick="send({t:'again'})">Сыграть ещё раз</button></div>`;
+else if(S.phase=='reveal')h+=`<div class="card"><h2>Раунд ${S.round}</h2><p>Все открывают: <b>${K[(S.round-1)%8]}</b> и по очереди объясняют, почему им место в бункере.</p><div class="big" id="tm"></div><div class="seg">${[30,60,90].map(s=>`<button class="${tp==s?'on':''}" onclick="tr(${s})">${s} с</button>`).join('')}</div><button class="btn o" onclick="ts()">${iv?'Пауза':'Таймер'}</button><button class="btn" onclick="send({t:'startvote'})">Начать голосование</button></div>`;
+else h+=`<div class="card"><h2>Голосование</h2><p>${me.out?'Ты наблюдаешь.':'Выбери, кого исключить.'}${S.tied?' Переголосование между: '+S.tied.map(id=>esc(S.pl.find(p=>p.id==id).name)).join(', ')+'.':''} Проголосовало ${al.filter(p=>p.voted).length} из ${al.length}.</p></div>`;
+h+=S.pl.map(p=>{const sh=Object.entries(p.shown),can=S.phase=='vote'&&!me.out&&!p.out&&p.id!=me.id&&(!S.tied||S.tied.includes(p.id));
+return`<div class="card ${p.out?'dead':p.mine?'op':''}"><div class="nm"><span class="dot ${p.on?'on':''}"></span>${esc(p.name)}${p.id==me.id?' (ты)':''}${p.out?' ☠':''}${S.phase=='vote'&&p.voted?' ✓':''}</div>${sh.map(([k,v])=>`<span class="chip"><b>${k}:</b> ${esc(v)}</span>`).join('')||'<div class="sub" style="text-align:left;margin:4px 0 0">Пока ничего не открыто</div>'}${can?`<button class="btn ${p.mine?'':'o'}" style="margin-top:10px;padding:10px" onclick="send({t:'vote',target:'${p.id}'})">${p.mine?'Твой голос ✓':'Голосовать против'}</button>`:''}</div>`}).join('')}
+if(tab==2)h+=`<div class="card"><div class="lb">Катастрофа</div><div class="tx">${esc(g.cat)}</div><div>Снаружи опасно примерно ${g.yrs} ${g.yrs==1?'год':g.yrs<5?'года':'лет'}.</div></div><div class="card"><div class="lb">Бункер</div><div class="tx">${esc(g.bun)}</div><div>${g.m2} м² · припасов на ${g.mo} мес.</div></div><div class="st"><div class="card"><b>${g.n}</b>игроков</div><div class="card"><b>${g.seats}</b>мест</div><div class="card"><b>${g.E}</b>вылетят</div></div>`;
+h+='</div>'}
+A.innerHTML=h;tms()}
+render();conn();
+</script></body></html>
