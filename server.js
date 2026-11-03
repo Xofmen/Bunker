@@ -3,8 +3,9 @@ const K=['Профессия','Пол и возраст','Здоровье','Х�
 const rnd=n=>Math.random()*n|0,pk=a=>a[rnd(a.length)];
 const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
 const pool=(t,k)=>t=='S'?P[k][0]:t=='F'?(P[k][1]||P[k][0]):P[k][0].concat(P[k][1]||[]);
-const html=fs.readFileSync(path.join(__dirname,'public','index.html'));
-const srv=http.createServer((q,s)=>{if(q.url=='/health')return s.end('ok');s.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});s.end(html)});
+const PUB=path.join(__dirname,'public'),MT={'.html':'text/html; charset=utf-8','.png':'image/png','.json':'application/manifest+json'},files={};
+fs.readdirSync(PUB).forEach(f=>files['/'+f]={b:fs.readFileSync(path.join(PUB,f)),t:MT[path.extname(f)]||'application/octet-stream'});
+const srv=http.createServer((q,s)=>{const u=q.url.split('?')[0];if(u=='/health')return s.end('ok');const f=files[u]||files['/index.html'];s.writeHead(200,{'Content-Type':f.t,'Cache-Control':f.t.startsWith('text/html')?'no-cache':'public,max-age=86400'});s.end(f.b)});
 const wss=new WebSocketServer({server:srv});
 const send=(ws,o)=>{if(ws&&ws.readyState==1)ws.send(JSON.stringify(o))};
 const alive=R=>R.pl.filter(p=>!p.out);
